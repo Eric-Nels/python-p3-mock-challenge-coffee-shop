@@ -1,34 +1,78 @@
 class Coffee:
     def __init__(self, name):
-        self.name = name
-        
+        if not isinstance(name, str) or not 3 <= len(name):
+            raise ValueError("Name must be a non-empty string")
+
+        if hasattr(self, "_name"):
+            raise AttributeError("Name is immutable and cannot be changed after instantiation.")
+
+        self._name = name
+        self._orders = []
+
+    @property
+    def name(self):
+        return self._name
+
     def orders(self):
-        pass
-    
+        return self._orders
+
     def customers(self):
-        pass
-    
+        return list(set(order.customer for order in self.orders()))
+
     def num_orders(self):
-        pass
-    
+        return len(self.orders())
+
     def average_price(self):
-        pass
+        if not self.orders():
+            return 0
+        total_price = sum(order.price for order in self.orders())
+        return total_price / len(self.orders())
 
 class Customer:
     def __init__(self, name):
+        if not isinstance(name, str) or not (1<=len(name)<=15):
+            raise ValueError("Name must be non-empty string")
+        
         self.name = name
+        self._orders = []
+
+    @property  
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, new_name):
+        if not isinstance(new_name, str):
+            raise ValueError("Customer name must be a string.")
+        self._name = new_name
         
     def orders(self):
-        pass
+        return self._orders
     
     def coffees(self):
-        pass
+        return list(set(order.coffee for order in self._orders))
     
     def create_order(self, coffee, price):
-        pass
+        order = Order(self, coffee, price)
+        self._orders.append(order)
+        coffee._orders.append(order)
+        return order
     
 class Order:
+
+    all = []
+
     def __init__(self, customer, coffee, price):
+        if not isinstance(price, float) or not (1.0 <= price <= 10.0):
+            raise ValueError("Price must be a float between 1.0 and 10.0, inclusive.")
+        
         self.customer = customer
         self.coffee = coffee
-        self.price = price
+        self._price = price
+        coffee._orders.append(self)
+        customer._orders.append(self)
+        Order.all.append(self)
+
+    @property
+    def price(self):
+        return self._price
